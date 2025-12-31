@@ -1,4 +1,4 @@
-import { User } from "../../generated/prisma/client";
+import { User } from "@prisma/client";
 
 export type UserResponse = {
   username: string;
@@ -9,6 +9,11 @@ export type UserResponse = {
 export type CreateUserRequest = {
   username: string;
   name: string;
+  password: string;
+};
+
+export type LoginUserRequest = {
+  username: string;
   password: string;
 };
 
