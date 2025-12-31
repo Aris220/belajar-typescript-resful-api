@@ -102,3 +102,33 @@ describe("POST /api/users/login", () => {
     expect(response.body.errors).toBeDefined();
   });
 });
+
+describe("GET /api/users/current", () => {
+  beforeEach(async () => {
+    await UserTest.create();
+  });
+  afterEach(async () => {
+    await UserTest.delete();
+  });
+
+  test("should get user", async () => {
+    const response = await supertest(web)
+      .get("/api/users/current")
+      .set("X-API-TOKEN", "test");
+
+    logger.debug(response.body);
+    expect(response.status).toBe(200);
+    expect(response.body.data.username).toBe("test");
+    expect(response.body.data.name).toBe("test");
+  });
+
+  test("should rejected gwt user if token invalid", async () => {
+    const response = await supertest(web)
+      .get("/api/users/current")
+      .set("X-API-TOKEN", "wrong");
+
+    logger.debug(response.body);
+    expect(response.status).toBe(401);
+    expect(response.body.errors).toBeDefined();
+  });
+});
