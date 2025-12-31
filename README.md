@@ -3,7 +3,8 @@
 Create .env file
 
 ```
-DATABASE_URL="mysql://root:@localhost:3306/belajar_typescript_restful_api"
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/belajar_typescript_restful_api"
+
 ```
 
 ```shell
@@ -19,4 +20,5 @@ npm run build
 npm run start
 
 ```
-"# belajar-typescript-resful-api" 
+
+"# belajar-typescript-resful-api"
