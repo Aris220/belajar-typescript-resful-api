@@ -4,7 +4,6 @@ import supertest from "supertest";
 import { web } from "../src/application/web";
 import { logger } from "../src/application/logging";
 import { UserTest } from "./test-util.test";
-import { response } from "express";
 import bcrypt from "bcrypt";
 
 describe("POST /api/users", () => {
@@ -197,5 +196,35 @@ describe("PATCH /api/users/current", () => {
 
     const user = await UserTest.get();
     expect(await bcrypt.compare("secret1", user.password)).toBe(true);
+  });
+});
+
+describe("DELETE /api/users/current", () => {
+  beforeEach(async () => {
+    await UserTest.create();
+  });
+  afterEach(async () => {
+    await UserTest.delete();
+  });
+  test("should be able to logout", async () => {
+    const response = await supertest(web)
+      .delete("/api/users/current")
+      .set("X-API-TOKEN", "test");
+
+    logger.debug(response.body);
+    expect(response.status).toBe(200);
+    expect(response.body.data).toBe("OK");
+
+    const user = await UserTest.get();
+    expect(user.token).toBeNull();
+  });
+  test("should reject user logout if token is wrong", async () => {
+    const response = await supertest(web)
+      .delete("/api/users/current")
+      .set("X-API-TOKEN", "wrong");
+
+    logger.debug(response.body);
+    expect(response.status).toBe(401);
+    expect(response.body.errors).toBeUndefined;
   });
 });
