@@ -34,3 +34,13 @@ export class UserTest {
     return user;
   }
 }
+
+export class ContactTest {
+  static async deleteAll() {
+    await prisma.contact.deleteMany({
+      where: {
+        username: "test",
+      },
+    });
+  }
+}
