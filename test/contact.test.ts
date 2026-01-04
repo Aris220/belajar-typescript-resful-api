@@ -94,3 +94,66 @@ describe("GET /api/contacts/:contactId", () => {
     expect(response.body.errors).toBeDefined();
   });
 });
+
+describe("PUT /api/contacts/:contactId", () => {
+  beforeEach(async () => {
+    await UserTest.create();
+    await ContactTest.create();
+  });
+  afterEach(async () => {
+    await ContactTest.deleteAll();
+    await UserTest.delete();
+  });
+
+  test("should be able to update contact", async () => {
+    const contact = await ContactTest.get();
+    const response = await supertest(web)
+      .put(`/api/contacts/${contact.id}`)
+      .set("X-API-TOKEN", "test")
+      .send({
+        first_name: "budi",
+        last_name: "kurnia",
+        email: "budi@mail.com",
+        phone: "011111",
+      });
+    logger.debug(response.body);
+    expect(response.status).toBe(200);
+    expect(response.body.data.id).toBe(contact.id);
+    expect(response.body.data.first_name).toBe("budi");
+    expect(response.body.data.last_name).toBe("kurnia");
+    expect(response.body.data.email).toBe("budi@mail.com");
+    expect(response.body.data.phone).toBe("011111");
+  });
+
+  test("should reject update contact if request invalid", async () => {
+    const contact = await ContactTest.get();
+    const response = await supertest(web)
+      .put(`/api/contacts/${contact.id}`)
+      .set("X-API-TOKEN", "test")
+      .send({
+        first_name: "",
+        last_name: "",
+        email: "budi",
+        phone: "",
+      });
+    logger.debug(response.body);
+    expect(response.status).toBe(400);
+    expect(response.body.errors).toBeDefined();
+  });
+
+  test("should reject update contact if token invalid", async () => {
+    const contact = await ContactTest.get();
+    const response = await supertest(web)
+      .put(`/api/contacts/${contact.id}`)
+      .set("X-API-TOKEN", "wrong")
+      .send({
+        first_name: "budi",
+        last_name: "kurnia",
+        email: "budi@mail.com",
+        phone: "011111",
+      });
+    logger.debug(response.body);
+    expect(response.status).toBe(401);
+    expect(response.body.errors).toBeDefined();
+  });
+});
