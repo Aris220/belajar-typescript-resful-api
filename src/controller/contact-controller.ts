@@ -1,4 +1,4 @@
-import { NextFunction, Response } from "express";
+import { NextFunction, request, Response } from "express";
 import { UserRequest } from "../type/user-request";
 import {
   CreateContactRequest,
@@ -40,6 +40,18 @@ export class ContactController {
       const response = await ContactService.update(req.user!, request);
       res.status(200).json({
         data: response,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  static async remove(req: UserRequest, res: Response, next: NextFunction) {
+    try {
+      const contactId = Number(req.params.contactId);
+      const response = await ContactService.remove(req.user!, contactId);
+      res.status(200).json({
+        data: "OK",
       });
     } catch (e) {
       next(e);
