@@ -1,5 +1,5 @@
 import { prisma } from "../src/application/database";
-import { Contact, User } from "@prisma/client";
+import { Contact, User, Address } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 export class UserTest {
@@ -66,5 +66,17 @@ export class ContactTest {
       throw new Error("contact not found");
     }
     return contact;
+  }
+}
+
+export class AddressTest {
+  static async deleteAll() {
+    await prisma.address.deleteMany({
+      where: {
+        contact: {
+          username: "test",
+        },
+      },
+    });
   }
 }
