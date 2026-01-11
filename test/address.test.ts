@@ -170,3 +170,133 @@ describe("GET /api/contacts/:contactId/addresses/:addressesId", () => {
     expect(response.body.errors).toBeDefined();
   });
 });
+
+describe("PUT /api/contacts/:contactId/addresses/:addressesId", () => {
+  beforeEach(async () => {
+    await UserTest.create();
+    await ContactTest.create();
+    await AddressTest.create();
+  });
+  afterEach(async () => {
+    await AddressTest.deleteAll();
+    await ContactTest.deleteAll();
+    await UserTest.delete();
+  });
+
+  test("should be able to update address", async () => {
+    const contact = await ContactTest.get();
+    const address = await AddressTest.get();
+
+    const response = await supertest(web)
+      .put(`/api/contacts/${contact.id}/addresses/${address.id}`)
+      .set("X-API-TOKEN", "test")
+      .send({
+        street: "street aaa",
+        city: "city aaa",
+        province: "province aaa",
+        country: "country aaa",
+        postal_code: "011111",
+      });
+    logger.debug(response.body);
+    expect(response.status).toBe(200);
+    expect(response.body.data.id).toBe(address.id);
+    expect(response.body.data.street).toBe("street aaa");
+    expect(response.body.data.city).toBe("city aaa");
+    expect(response.body.data.province).toBe("province aaa");
+    expect(response.body.data.country).toBe("country aaa");
+    expect(response.body.data.postal_code).toBe("011111");
+  });
+
+  test("should reject to update address if request invalid", async () => {
+    const contact = await ContactTest.get();
+    const address = await AddressTest.get();
+
+    const response = await supertest(web)
+      .put(`/api/contacts/${contact.id}/addresses/${address.id}`)
+      .set("X-API-TOKEN", "test")
+      .send({
+        street: "street aaa",
+        city: "city aaa",
+        province: "province aaa",
+        country: "",
+        postal_code: "",
+      });
+    logger.debug(response.body);
+    expect(response.status).toBe(400);
+    expect(response.body.errors).toBeDefined();
+  });
+
+  test("should reject to update address if token invalid", async () => {
+    const contact = await ContactTest.get();
+    const address = await AddressTest.get();
+
+    const response = await supertest(web)
+      .put(`/api/contacts/${contact.id}/addresses/${address.id}`)
+      .set("X-API-TOKEN", "wrong")
+      .send({
+        street: "street aaa",
+        city: "city aaa",
+        province: "province aaa",
+        country: "country aaa",
+        postal_code: "011111",
+      });
+    logger.debug(response.body);
+    expect(response.status).toBe(401);
+    expect(response.body.errors).toBeDefined();
+  });
+
+  test("should reject to update address if contact not found", async () => {
+    const contact = await ContactTest.get();
+    const address = await AddressTest.get();
+
+    const response = await supertest(web)
+      .put(`/api/contacts/${contact.id + 1}/addresses/${address.id}`)
+      .set("X-API-TOKEN", "test")
+      .send({
+        street: "street aaa",
+        city: "city aaa",
+        province: "province aaa",
+        country: "country aaa",
+        postal_code: "011111",
+      });
+    logger.debug(response.body);
+    expect(response.status).toBe(404);
+    expect(response.body.errors).toBeDefined();
+  });
+  test("should reject to update address if address not found", async () => {
+    const contact = await ContactTest.get();
+    const address = await AddressTest.get();
+
+    const response = await supertest(web)
+      .put(`/api/contacts/${contact.id}/addresses/${address.id + 1}`)
+      .set("X-API-TOKEN", "test")
+      .send({
+        street: "street aaa",
+        city: "city aaa",
+        province: "province aaa",
+        country: "country aaa",
+        postal_code: "011111",
+      });
+    logger.debug(response.body);
+    expect(response.status).toBe(404);
+    expect(response.body.errors).toBeDefined();
+  });
+  test("should reject to update address if address and contact not found", async () => {
+    const contact = await ContactTest.get();
+    const address = await AddressTest.get();
+
+    const response = await supertest(web)
+      .put(`/api/contacts/${contact.id + 1}/addresses/${address.id + 1}`)
+      .set("X-API-TOKEN", "test")
+      .send({
+        street: "street aaa",
+        city: "city aaa",
+        province: "province aaa",
+        country: "country aaa",
+        postal_code: "011111",
+      });
+    logger.debug(response.body);
+    expect(response.status).toBe(404);
+    expect(response.body.errors).toBeDefined();
+  });
+});

@@ -1,9 +1,10 @@
-import { User } from "@prisma/client";
+import { Address, User, Contact } from "@prisma/client";
 import {
   AddresResponse,
   CreateAddressRequest,
   GetAddressRequest,
   toAddressResponse,
+  UpdateAddressRequest,
 } from "../model/address-model";
 import { Validation } from "../validation/validation";
 import { AddressValidation } from "../validation/address-validation";
@@ -33,6 +34,23 @@ export class AddressService {
     return toAddressResponse(address);
   }
 
+  static async checkAddressMustExists(
+    contactId: number,
+    addressId: number
+  ): Promise<Address> {
+    const address = await prisma.address.findFirst({
+      where: {
+        contact_id: contactId,
+        id: addressId,
+      },
+    });
+
+    if (!address) {
+      throw new ResponseError(404, `Address not found`);
+    }
+    return address;
+  }
+
   static async get(
     user: User,
     request: GetAddressRequest
@@ -42,15 +60,38 @@ export class AddressService {
       user.username,
       request.contact_id
     );
-    const address = await prisma.address.findFirst({
+    const address = await this.checkAddressMustExists(
+      getRequest.contact_id,
+      getRequest.id
+    );
+    return toAddressResponse(address);
+  }
+
+  static async update(
+    user: User,
+    request: UpdateAddressRequest
+  ): Promise<AddresResponse> {
+    const updateRequest = Validation.validate(
+      AddressValidation.UPDATE,
+      request
+    );
+    await ContactService.checkContactMustExists(
+      user.username,
+      request.contact_id
+    );
+    await this.checkAddressMustExists(
+      updateRequest.contact_id,
+      updateRequest.id
+    );
+
+    const address = await prisma.address.update({
       where: {
-        id: getRequest.id,
-        contact_id: getRequest.contact_id,
+        id: updateRequest.id,
+        contact_id: updateRequest.contact_id,
       },
+      data: updateRequest,
     });
-    if (!address) {
-      throw new ResponseError(404, "addres not found");
-    }
+
     return toAddressResponse(address);
   }
 }
