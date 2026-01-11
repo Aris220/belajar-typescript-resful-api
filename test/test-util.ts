@@ -79,4 +79,31 @@ export class AddressTest {
       },
     });
   }
+
+  static async create() {
+    const contact = await ContactTest.get();
+    await prisma.address.create({
+      data: {
+        contact_id: contact.id,
+        street: "street abc",
+        city: "city abc",
+        province: "province abc",
+        country: "country abc",
+        postal_code: "123123",
+      },
+    });
+  }
+  static async get(): Promise<Address> {
+    const address = await prisma.address.findFirst({
+      where: {
+        contact: {
+          username: "test",
+        },
+      },
+    });
+    if (!address) {
+      throw new Error("contact not found");
+    }
+    return address;
+  }
 }

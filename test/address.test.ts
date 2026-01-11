@@ -1,7 +1,8 @@
-import { UserTest, ContactTest, AddressTest } from "./test-util.test";
+import { UserTest, ContactTest, AddressTest } from "./test-util";
 import supertest from "supertest";
 import { web } from "../src/application/web";
 import { logger } from "../src/application/logging";
+import { response } from "express";
 
 describe("POST /api/contacts/:contactId/addresses", () => {
   beforeEach(async () => {
@@ -85,6 +86,84 @@ describe("POST /api/contacts/:contactId/addresses", () => {
         country: "country abc",
         postal_code: "123123",
       });
+
+    logger.debug(response.body);
+    expect(response.status).toBe(404);
+    expect(response.body.errors).toBeDefined();
+  });
+});
+
+describe("GET /api/contacts/:contactId/addresses/:addressesId", () => {
+  beforeEach(async () => {
+    await UserTest.create();
+    await ContactTest.create();
+    await AddressTest.create();
+  });
+  afterEach(async () => {
+    await AddressTest.deleteAll();
+    await ContactTest.deleteAll();
+    await UserTest.delete();
+  });
+
+  test("should be able to get address", async () => {
+    const contact = await ContactTest.get();
+    const address = await AddressTest.get();
+
+    const response = await supertest(web)
+      .get(`/api/contacts/${contact.id}/addresses/${address.id}`)
+      .set("X-API-TOKEN", "test");
+
+    logger.debug(response.body);
+    expect(response.status).toBe(200);
+    expect(response.body.data.id).toBeDefined();
+    expect(response.body.data.street).toBe(address.street);
+    expect(response.body.data.city).toBe(address.city);
+    expect(response.body.data.country).toBe(address.country);
+    expect(response.body.data.postal_code).toBe(address.postal_code);
+  });
+  test("should be reject to get address if token invalid", async () => {
+    const contact = await ContactTest.get();
+    const address = await AddressTest.get();
+
+    const response = await supertest(web)
+      .get(`/api/contacts/${contact.id}/addresses/${address.id}`)
+      .set("X-API-TOKEN", "wrong");
+
+    logger.debug(response.body);
+    expect(response.status).toBe(401);
+    expect(response.body.errors).toBeDefined();
+  });
+  test("should be reject to get address if contact not found", async () => {
+    const contact = await ContactTest.get();
+    const address = await AddressTest.get();
+
+    const response = await supertest(web)
+      .get(`/api/contacts/${contact.id + 1}/addresses/${address.id}`)
+      .set("X-API-TOKEN", "test");
+
+    logger.debug(response.body);
+    expect(response.status).toBe(404);
+    expect(response.body.errors).toBeDefined();
+  });
+  test("should be reject to get address if address not found", async () => {
+    const contact = await ContactTest.get();
+    const address = await AddressTest.get();
+
+    const response = await supertest(web)
+      .get(`/api/contacts/${contact.id}/addresses/${address.id + 1}`)
+      .set("X-API-TOKEN", "test");
+
+    logger.debug(response.body);
+    expect(response.status).toBe(404);
+    expect(response.body.errors).toBeDefined();
+  });
+  test("should be reject to get address if address and contact not found", async () => {
+    const contact = await ContactTest.get();
+    const address = await AddressTest.get();
+
+    const response = await supertest(web)
+      .get(`/api/contacts/${contact.id + 1}/addresses/${address.id + 1}`)
+      .set("X-API-TOKEN", "test");
 
     logger.debug(response.body);
     expect(response.status).toBe(404);

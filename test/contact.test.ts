@@ -1,5 +1,5 @@
 import supertest from "supertest";
-import { ContactTest, UserTest } from "./test-util.test";
+import { ContactTest, UserTest } from "./test-util";
 import { web } from "../src/application/web";
 import { logger } from "../src/application/logging";
 
@@ -157,6 +157,7 @@ describe("PUT /api/contacts/:contactId", () => {
     expect(response.body.errors).toBeDefined();
   });
 });
+
 describe("DELETE /api/contacts/:contactId", () => {
   beforeEach(async () => {
     await UserTest.create();

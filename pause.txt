@@ -1,1 +1,7 @@
 3:34:46b
+
+how to run  jest just 1 file
+npx jest name_file
+
+how to run all file test with jest in 1 file/run
+npx jest --runInBand
