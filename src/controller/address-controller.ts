@@ -68,6 +68,7 @@ export class AddressController {
       next(e);
     }
   }
+
   static async list(req: UserRequest, res: Response, next: NextFunction) {
     try {
       const contactId = Number(req.params.contactId);
