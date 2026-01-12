@@ -13,6 +13,7 @@ import { ContactService } from "./contact-service";
 import { prisma } from "../application/database";
 import { response } from "express";
 import { ResponseError } from "../error/response-error";
+import { UserRequest } from "../type/user-request";
 
 export class AddressService {
   static async create(
@@ -120,5 +121,20 @@ export class AddressService {
       },
     });
     return toAddressResponse(address);
+  }
+
+  static async list(
+    user: User,
+    contactId: number
+  ): Promise<Array<AddresResponse>> {
+    await ContactService.checkContactMustExists(user.username, contactId);
+
+    const addresses = await prisma.address.findMany({
+      where: {
+        contact_id: contactId,
+      },
+    });
+
+    return addresses.map((address) => toAddressResponse(address));
   }
 }
